@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HTML vs HTML5: a comparison with good and bad markup</title>
+  <meta name="description" content="How HTML and HTML5 differ in features and usage, with live examples of good semantic markup and bad non-semantic markup.">
+  <style>
+    :root {
+      --paper: #fbf8f1;
+      --card: #ffffff;
+      --ink: #1c2620;
+      --muted: #5b675f;
+      --line: #e3ddcf;
+      --green: #1b6b5a;
+      --green-soft: #e3f0ea;
+      --brick: #a33a22;
+      --brick-soft: #f8e7e1;
+      --serif: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+      --sans: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+      --mono: Consolas, "Cascadia Mono", Menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 1.04rem/1.7 var(--sans); }
+    h1, h2, h3, h4 { font-family: var(--serif); font-weight: 700; line-height: 1.2; margin: 0 0 .6rem; }
+    p { margin: 0 0 1rem; }
+    a { color: var(--green); }
+    code { font-family: var(--mono); font-size: .88em; background: #efe9da; padding: .08em .35em; border-radius: 4px; }
+    img, svg { max-width: 100%; }
+    :focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+
+    /* ---------- page frame: sidebar + content ---------- */
+    .frame { display: grid; grid-template-columns: 280px minmax(0, 1fr); min-height: 100vh; }
+    .side { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 2.5rem 1.75rem; border-right: 1px solid var(--line); background: #f4efe3; }
+    .side h1 { font-size: 2rem; letter-spacing: -.01em; }
+    .side .sub { color: var(--muted); font-size: .95rem; margin-bottom: 2rem; }
+    .side ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+    .side li { counter-increment: toc; margin: 0; }
+    .side li a { display: flex; gap: .8rem; padding: .5rem 0; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); font-weight: 600; }
+    .side li a::before { content: counter(toc, decimal-leading-zero); font-family: var(--mono); font-size: .8rem; color: var(--green); padding-top: .2rem; }
+    .side li a:hover { color: var(--green); }
+
+    .content { padding: 3rem clamp(1.25rem, 4vw, 4rem) 3rem; max-width: 1000px; }
+    section { padding-top: 3.5rem; }
+    section:first-child { padding-top: 0; }
+    .kicker { font-family: var(--mono); font-size: .8rem; color: var(--green); margin-bottom: .4rem; }
+    h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); }
+    .intro { font-size: 1.15rem; color: var(--muted); max-width: 62ch; }
+
+    /* ---------- timeline ---------- */
+    .timeline { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1.6rem 1rem; margin: 1.5rem 0 0; padding: 1.6rem 0 .5rem; border-top: 1px solid var(--line); }
+    .timeline li { position: relative; padding: 1.1rem .6rem 0 0; font-size: .9rem; line-height: 1.4; }
+    .timeline li::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--line); }
+    .timeline li::after { content: ""; position: absolute; top: -5px; left: 0; width: 13px; height: 13px; border-radius: 50%; background: var(--paper); border: 3px solid var(--muted); }
+    .timeline li.now::after { border-color: var(--green); background: var(--green); }
+    .timeline b { display: block; font-family: var(--serif); font-size: 1.15rem; }
+    .timeline li.now b { color: var(--green); }
+
+    /* ---------- two eras ---------- */
+    .eras { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+    .era { padding: 1.4rem 1.5rem; border-radius: 16px; }
+    .era.old { background: var(--brick-soft); }
+    .era.new { background: var(--green-soft); }
+    .era h3 { font-size: 1.3rem; }
+    .era ul { margin: 0; padding-left: 1.2rem; }
+    .era li { margin-bottom: .35rem; }
+
+    /* ---------- feature compare cards ---------- */
+    .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.1rem; margin-top: 1.5rem; }
+    .fc { background: var(--card); border-radius: 16px; box-shadow: 0 1px 2px rgba(60,45,10,.10), 0 6px 18px rgba(60,45,10,.06); padding: 1.2rem 1.3rem; }
+    .fc:last-child { grid-column: 1 / -1; }
+    .fc h3 { font-size: 1.1rem; margin-bottom: .8rem; }
+    .fc dl { margin: 0; display: grid; gap: .6rem; }
+    .fc dt { font-family: var(--mono); font-size: .75rem; font-weight: 700; display: inline-block; padding: .1rem .5rem; border-radius: 999px; margin-bottom: .2rem; }
+    .fc .o dt { background: var(--brick-soft); color: var(--brick); }
+    .fc .n dt { background: var(--green-soft); color: var(--green); }
+    .fc dd { margin: 0; font-size: .95rem; line-height: 1.55; }
+
+    /* ---------- usage ---------- */
+    .usage { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+    .usage h3 { font-size: 1.2rem; padding-bottom: .5rem; border-bottom: 2px solid currentColor; }
+    .usage .o h3 { color: var(--brick); }
+    .usage .n h3 { color: var(--green); }
+    .usage ul { margin: 0; padding-left: 1.2rem; }
+    .usage li { margin-bottom: .4rem; }
+    .pull { margin: 2rem 0 0; padding: 1rem 1.4rem; border-left: 4px solid var(--green); font-family: var(--serif); font-size: 1.15rem; color: var(--ink); }
+
+    /* ---------- specimens (code + render) ---------- */
+    .specimen { margin-top: 2rem; background: var(--card); border-radius: 18px; box-shadow: 0 1px 2px rgba(60,45,10,.10), 0 8px 24px rgba(60,45,10,.07); overflow: hidden; }
+    .specimen > header { padding: 1rem 1.4rem; display: flex; align-items: baseline; gap: .9rem; flex-wrap: wrap; }
+    .specimen.bad > header { background: var(--brick); color: #fff; }
+    .specimen.good > header { background: var(--green); color: #fff; }
+    .specimen > header h3 { margin: 0; font-size: 1.25rem; }
+    .specimen > header p { margin: 0; opacity: .9; font-size: .95rem; }
+    .pair { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 1.25rem; padding: 1.25rem; }
+    .pair h4 { font-family: var(--mono); font-size: .8rem; text-transform: none; color: var(--muted); margin-bottom: .4rem; }
+    pre { margin: 0; padding: 1rem; background: #17211c; color: #e8efe9; border-radius: 12px; overflow: auto; height: 470px; font: .8rem/1.55 var(--mono); tab-size: 2; }
+    pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+    iframe { display: block; width: 100%; height: 470px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+    .notes { margin: 0; padding: 1.1rem 1.4rem 1.4rem 1.4rem; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem 1.5rem; border-top: 1px solid var(--line); }
+    .notes li { position: relative; padding-left: 1.7rem; font-size: .95rem; line-height: 1.5; }
+    .notes li::before { position: absolute; left: 0; top: 0; font-weight: 700; }
+    .bad .notes li::before { content: "✗"; color: var(--brick); }
+    .good .notes li::before { content: "✓"; color: var(--green); }
+
+    /* ---------- meaning maps ---------- */
+    .maps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; margin-top: 1.25rem; }
+    .map { background: var(--card); border-radius: 16px; padding: 1.1rem 1.3rem; font: .85rem/1.6 var(--mono); box-shadow: 0 1px 2px rgba(60,45,10,.10); }
+    .map h4 { font: 700 1rem var(--serif); margin-bottom: .5rem; }
+    .map.bad h4 { color: var(--brick); }
+    .map.good h4 { color: var(--green); }
+    .map ul { list-style: none; margin: 0; padding-left: 1.1rem; border-left: 1px dashed var(--line); }
+    .map > ul { padding-left: 0; border-left: 0; }
+
+    .why { margin-top: 1.5rem; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+    .why div { padding: 1rem 1.1rem; border-radius: 14px; background: #f1ebdc; font-size: .93rem; line-height: 1.5; }
+    .why b { display: block; font-family: var(--serif); font-size: 1.05rem; margin-bottom: .2rem; }
+
+    /* ---------- live tiles ---------- */
+    .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.1rem; margin-top: 1.5rem; }
+    .tile { background: var(--card); border-radius: 16px; padding: 1.2rem; box-shadow: 0 1px 2px rgba(60,45,10,.10), 0 6px 18px rgba(60,45,10,.06); }
+    .tile.wide { grid-column: span 2; }
+    .tile h3 { font-size: 1.05rem; }
+    form { display: grid; gap: .7rem; }
+    label { display: grid; gap: .2rem; font-weight: 600; font-size: .9rem; }
+    input, button { font: inherit; padding: .5rem .65rem; border: 1px solid #c9c1ad; border-radius: 8px; background: #fff; color: var(--ink); }
+    input[type="color"] { padding: .15rem; height: 2.3rem; }
+    button { background: var(--green); border-color: var(--green); color: #fff; font-weight: 700; cursor: pointer; }
+    button:hover { filter: brightness(1.1); }
+    .form-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+    details { border-bottom: 1px solid var(--line); padding: .55rem 0; }
+    summary { cursor: pointer; font-weight: 600; }
+    progress, meter { width: 100%; height: 1.2rem; }
+    mark { background: #f3dd9b; padding: 0 .2em; }
+    .small { font-size: .88rem; color: var(--muted); }
+    .tile pre { height: auto; max-height: 260px; }
+
+    /* ---------- cheat sheet ---------- */
+    .sheet { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; margin-top: 1.25rem; }
+    .sheet div { border-radius: 16px; padding: 1.2rem 1.4rem; }
+    .sheet .do { background: var(--green-soft); }
+    .sheet .dont { background: var(--brick-soft); }
+    .sheet h3 { font-size: 1.15rem; }
+    .sheet ul { list-style: none; margin: 0; padding: 0; }
+    .sheet li { position: relative; padding-left: 1.6rem; margin-bottom: .45rem; }
+    .sheet li::before { position: absolute; left: 0; font-weight: 700; }
+    .sheet .do li::before { content: "✓"; color: var(--green); }
+    .sheet .dont li::before { content: "✗"; color: var(--brick); }
+
+    .end { margin-top: 3.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
+
+    /* ---------- responsive ---------- */
+    @media (max-width: 1100px) {
+      .why { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tile.wide { grid-column: span 2; }
+    }
+    @media (max-width: 980px) {
+      .frame { grid-template-columns: minmax(0, 1fr); }
+      .side { position: static; height: auto; padding: 1.75rem 1.25rem 1.25rem; border-right: 0; border-bottom: 1px solid var(--line); }
+      .side .sub { margin-bottom: 1rem; }
+      .side ol { display: flex; flex-wrap: wrap; gap: 0 1.4rem; }
+      .side li a { border-bottom: 0; padding: .3rem 0; }
+      .pair { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 700px) {
+      .eras, .cards, .usage, .maps, .sheet, .notes, .why, .tiles, .form-cols { grid-template-columns: minmax(0, 1fr); }
+      .tile.wide { grid-column: auto; }
+      pre, iframe { height: 400px; }
+    }
+  </style>
+</head>
+<body>
+<div class="frame">
+
+  <header class="side">
+    <h1>HTML vs HTML5</h1>
+    <p class="sub">Features, usage, and what good markup looks like.</p>
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#story">The story</a></li>
+        <li><a href="#features">Feature by feature</a></li>
+        <li><a href="#usage">Where each is used</a></li>
+        <li><a href="#good-bad">Good vs bad HTML</a></li>
+        <li><a href="#live">HTML5 in action</a></li>
+        <li><a href="#cheat">Cheat sheet</a></li>
+      </ol>
+    </nav>
+  </header>
+
+  <main class="content">
+
+    <section id="story" aria-labelledby="story-t">
+      <p class="kicker">01 / the story</p>
+      <h2 id="story-t">From a few tags to a full web platform</h2>
+      <p class="intro">HTML describes what each part of a page is. HTML 4 did that with generic boxes and relied on plugins for everything else. HTML5 gave the markup real meaning and put media, graphics and apps inside the browser.</p>
+
+      <ol class="timeline" aria-label="Timeline of HTML versions">
+        <li><b>1991</b>First description of HTML by Tim Berners-Lee</li>
+        <li><b>1995</b>HTML 2.0, the first formal standard</li>
+        <li><b>1997</b>HTML 4.0, with style sheets and frames</li>
+        <li><b>1999</b>HTML 4.01, the last version of the old line</li>
+        <li><b>2008</b>First public working draft of HTML5</li>
+        <li class="now"><b>2014</b>HTML5 becomes a W3C Recommendation</li>
+        <li class="now"><b>2019</b>WHATWG Living Standard becomes the single standard</li>
+      </ol>
+
+      <div class="eras">
+        <article class="era old">
+          <h3>HTML (4.01 and earlier)</h3>
+          <ul>
+            <li>Pages built from generic <code>&lt;div&gt;</code> and <code>&lt;table&gt;</code> boxes</li>
+            <li>Plugins (Flash, QuickTime) for video, audio and animation</li>
+            <li>Looks mixed into content with <code>&lt;font&gt;</code> and <code>&lt;center&gt;</code></li>
+          </ul>
+        </article>
+        <article class="era new">
+          <h3>HTML5</h3>
+          <ul>
+            <li>Tags with meaning: <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;article&gt;</code>, <code>&lt;footer&gt;</code></li>
+            <li>Native <code>&lt;video&gt;</code>, <code>&lt;audio&gt;</code>, <code>&lt;canvas&gt;</code> and inline SVG</li>
+            <li>Smarter forms and new browser APIs</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="features" aria-labelledby="features-t">
+      <p class="kicker">02 / features</p>
+      <h2 id="features-t">Feature by feature</h2>
+      <p class="intro">Each card compares the old way with the HTML5 way.</p>
+      <div class="cards">
+        <article class="fc"><h3>Doctype</h3><dl>
+          <div class="o"><dt>HTML 4</dt><dd>A long line naming a DTD: <code>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" …&gt;</code></dd></div>
+          <div class="n"><dt>HTML5</dt><dd><code>&lt;!DOCTYPE html&gt;</code></dd></div></dl></article>
+        <article class="fc"><h3>Character set</h3><dl>
+          <div class="o"><dt>HTML 4</dt><dd><code>&lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"&gt;</code></dd></div>
+          <div class="n"><dt>HTML5</dt><dd><code>&lt;meta charset="UTF-8"&gt;</code></dd></div></dl></article>
+        <article class="fc"><h3>Page structure</h3><dl>
+          <div class="o"><dt>HTML 4</dt><dd>Generic <code>&lt;div id="header"&gt;</code>, <code>&lt;div id="menu"&gt;</code>. The meaning is only in the names.</dd></div>
+          <div class="n"><dt>HTML5</dt><dd><code>&lt;header&gt;</code> <code>&lt;nav&gt;</code> <code>&lt;main&gt;</code> <code>&lt;section&gt;</code> <code>&lt;article&gt;</code> <code>&lt;aside&gt;</code> <code>&lt;footer&gt;</code></dd></div></dl></article>
+        <article class="fc"><h3>Audio and video</h3><dl>
+          <div class="o"><dt>HTML 4</dt><dd>Plugins through <code>&lt;object&gt;</code> or <code>&lt;embed&gt;</code></dd></div>
+          <div class="n"><dt>HTML5</dt><dd>Native <code>&lt;audio&gt;</code> and <code>&lt;video&gt;</code> with <code>&lt;source&gt;</code> and subtitles via <code>&lt;track&gt;</code></dd></div></dl></article>
+        <article class="fc"><h3>Graphics</h3><dl>
+          <div class="o"><dt>HTML 4</dt><dd>Images only, or a plugin</dd></div>
+          <div class="n"><dt>HTML5</dt><dd><code>&lt;canvas&gt;</code> for scripted drawing and inline <code>&lt;svg&gt;</code> for vector graphics</dd></div></dl></article>
+        <article class="fc"><h3>Forms</h3><dl>
+          <div class="o"><dt>HTML 4</dt><dd>Basic input types. Checking an email or required field needs JavaScript.</dd></div>
+          <div class="n"><dt>HTML5</dt><dd>Types like <code>email</code>, <code>date</code>, <code>range</code>, <code>color</code>, built-in <code>required</code> and <code>pattern</code>, plus <code>&lt;datalist&gt;</code></dd></div></dl></article>
+        <article class="fc"><h3>Client storage</h3><dl>
+          <div class="o"><dt>HTML 4</dt><dd>Cookies only, about 4 KB each</dd></div>
+          <div class="n"><dt>HTML5</dt><dd><code>localStorage</code> and <code>sessionStorage</code>, several MB per site</dd></div></dl></article>
+        <article class="fc"><h3>Browser APIs</h3><dl>
+          <div class="o"><dt>HTML 4</dt><dd>None in the language itself</dd></div>
+          <div class="n"><dt>HTML5</dt><dd>Geolocation, Drag and Drop, Web Workers, WebSockets and the History API</dd></div></dl></article>
+        <article class="fc"><h3>Presentational tags</h3><dl>
+          <div class="o"><dt>HTML 4</dt><dd><code>&lt;font&gt;</code>, <code>&lt;center&gt;</code>, <code>&lt;big&gt;</code>, <code>&lt;strike&gt;</code>, <code>&lt;frameset&gt;</code></dd></div>
+          <div class="n"><dt>HTML5</dt><dd>Obsolete. Appearance is handled by CSS.</dd></div></dl></article>
+        <article class="fc"><h3>Mobile and responsive</h3><dl>
+          <div class="o"><dt>HTML 4</dt><dd>Not designed for phones</dd></div>
+          <div class="n"><dt>HTML5</dt><dd>Viewport meta tag, <code>&lt;picture&gt;</code> and <code>srcset</code> for responsive images</dd></div></dl></article>
+        <article class="fc"><h3>Error handling</h3><dl>
+          <div class="o"><dt>HTML 4</dt><dd>Browsers guessed differently when markup was broken</dd></div>
+          <div class="n"><dt>HTML5</dt><dd>A defined parsing algorithm gives the same result in every browser</dd></div></dl></article>
+      </div>
+    </section>
+
+    <section id="usage" aria-labelledby="usage-t">
+      <p class="kicker">03 / usage</p>
+      <h2 id="usage-t">Where each one is used</h2>
+      <div class="usage">
+        <article class="o">
+          <h3>Older HTML today</h3>
+          <ul>
+            <li>Maintaining legacy sites from the 2000s</li>
+            <li>Old intranet or government pages never rewritten</li>
+            <li>HTML emails, which still depend on table layouts for mail app compatibility</li>
+          </ul>
+        </article>
+        <article class="n">
+          <h3>HTML5 today</h3>
+          <ul>
+            <li>Every modern website and web app</li>
+            <li>Mobile-friendly, responsive sites and progressive web apps</li>
+            <li>Video and audio players, games and charts without plugins</li>
+            <li>Pages that need good accessibility and search visibility</li>
+          </ul>
+        </article>
+      </div>
+      <p class="pull">When people say "HTML" today they mean HTML5. Old pages still open in modern browsers, but new work should follow HTML5.</p>
+    </section>
+
+    <section id="good-bad" aria-labelledby="gb-t">
+      <p class="kicker">04 / good vs bad</p>
+      <h2 id="gb-t">The same page, written badly and written well</h2>
+      <p class="intro">Both examples contain the same content: a title, a menu, one article, a related-links box and a footer. The code is on the left and its real rendered result is on the right.</p>
+
+      <article class="specimen bad" aria-labelledby="bad-t">
+        <header><h3 id="bad-t">Bad HTML</h3><p>non-semantic, poor structure</p></header>
+        <div class="pair">
+          <div><h4>code</h4><pre tabindex="0"><code>&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;page&lt;/title&gt;
+&lt;/head&gt;
+&lt;body bgcolor="#f2f2f2"&gt;
+
+&lt;center&gt;&lt;font size="6" color="#1b6b5a"&gt;&lt;b&gt;My Notes&lt;/b&gt;&lt;/font&gt;&lt;/center&gt;
+&lt;br&gt;&lt;br&gt;
+
+&lt;div id="menu"&gt;
+  &lt;a href="#"&gt;Home&lt;/a&gt; | &lt;a href="#"&gt;Notes&lt;/a&gt; | &lt;a href="#"&gt;Contact&lt;/a&gt;
+&lt;/div&gt;
+
+&lt;div class="main"&gt;
+  &lt;div class="title"&gt;&lt;b&gt;&lt;big&gt;What is HTML?&lt;/big&gt;&lt;/b&gt;&lt;/div&gt;
+  &lt;div class="date"&gt;19 October 2026&lt;/div&gt;
+  &lt;div&gt;HTML is the language used to structure web pages.
+  &lt;br&gt;&lt;br&gt;
+  It tells the browser what each part of a page is.&lt;/div&gt;
+  &lt;img src="tags.svg" width="160"&gt;
+  &lt;div class="caption"&gt;&lt;i&gt;Page structure&lt;/i&gt;&lt;/div&gt;
+  &lt;b&gt;&lt;i&gt;Click here&lt;/b&gt;&lt;/i&gt; to read more.
+&lt;/div&gt;
+
+&lt;div class="side"&gt;&lt;b&gt;Related&lt;/b&gt;&lt;br&gt;
+&lt;a href="#"&gt;CSS basics&lt;/a&gt;&lt;/div&gt;
+
+&lt;table width="100%"&gt;&lt;tr&gt;&lt;td align="center"&gt;Copyright 2026&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre></div>
+          <div><h4>rendered result</h4><iframe title="Rendered bad HTML example" srcdoc="&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;page&lt;/title&gt;
+&lt;/head&gt;
+&lt;body bgcolor=&quot;#f2f2f2&quot;&gt;
+
+&lt;center&gt;&lt;font size=&quot;6&quot; color=&quot;#1b6b5a&quot;&gt;&lt;b&gt;My Notes&lt;/b&gt;&lt;/font&gt;&lt;/center&gt;
+&lt;br&gt;&lt;br&gt;
+
+&lt;div id=&quot;menu&quot;&gt;
+  &lt;a href=&quot;#&quot;&gt;Home&lt;/a&gt; | &lt;a href=&quot;#&quot;&gt;Notes&lt;/a&gt; | &lt;a href=&quot;#&quot;&gt;Contact&lt;/a&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;main&quot;&gt;
+  &lt;div class=&quot;title&quot;&gt;&lt;b&gt;&lt;big&gt;What is HTML?&lt;/big&gt;&lt;/b&gt;&lt;/div&gt;
+  &lt;div class=&quot;date&quot;&gt;19 October 2026&lt;/div&gt;
+  &lt;div&gt;HTML is the language used to structure web pages.
+  &lt;br&gt;&lt;br&gt;
+  It tells the browser what each part of a page is.&lt;/div&gt;
+  &lt;img src=&quot;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMzIwIDE4MCI+PHJlY3Qgd2lkdGg9IjMyMCIgaGVpZ2h0PSIxODAiIGZpbGw9IiNlYWYzZWUiLz48cmVjdCB4PSIyMCIgeT0iMTQiIHdpZHRoPSIyODAiIGhlaWdodD0iMzAiIGZpbGw9IiMxYjZiNWEiLz48dGV4dCB4PSIxNjAiIHk9IjM1IiBmb250LXNpemU9IjE0IiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+aGVhZGVyICsgbmF2PC90ZXh0PjxyZWN0IHg9IjIwIiB5PSI1MiIgd2lkdGg9IjE5MCIgaGVpZ2h0PSI4MCIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMWI2YjVhIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSIxMTUiIHk9Ijk3IiBmb250LXNpemU9IjE0IiBmaWxsPSIjMWI2YjVhIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+bWFpbiAvIGFydGljbGU8L3RleHQ+PHJlY3QgeD0iMjE4IiB5PSI1MiIgd2lkdGg9IjgyIiBoZWlnaHQ9IjgwIiBmaWxsPSIjZTZiNjU1IiBzdHJva2U9IiMxYjZiNWEiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjI1OSIgeT0iOTciIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiMxYjZiNWEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5hc2lkZTwvdGV4dD48cmVjdCB4PSIyMCIgeT0iMTQwIiB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI2IiBmaWxsPSIjMWI2YjVhIi8+PHRleHQgeD0iMTYwIiB5PSIxNTgiIGZvbnQtc2l6ZT0iMTMiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5mb290ZXI8L3RleHQ+PC9zdmc+&quot; width=&quot;160&quot;&gt;
+  &lt;div class=&quot;caption&quot;&gt;&lt;i&gt;Page structure&lt;/i&gt;&lt;/div&gt;
+  &lt;b&gt;&lt;i&gt;Click here&lt;/b&gt;&lt;/i&gt; to read more.
+&lt;/div&gt;
+
+&lt;div class=&quot;side&quot;&gt;&lt;b&gt;Related&lt;/b&gt;&lt;br&gt;
+&lt;a href=&quot;#&quot;&gt;CSS basics&lt;/a&gt;&lt;/div&gt;
+
+&lt;table width=&quot;100%&quot;&gt;&lt;tr&gt;&lt;td align=&quot;center&quot;&gt;Copyright 2026&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;"></iframe></div>
+        </div>
+        <ul class="notes">
+          <li>No doctype, <code>lang</code> or charset, so the browser falls back to quirks mode.</li>
+          <li><code>&lt;font&gt;</code>, <code>&lt;center&gt;</code>, <code>&lt;big&gt;</code> and <code>bgcolor</code> mix looks into content.</li>
+          <li>The title is a bold <code>&lt;div&gt;</code>, so there is no real heading.</li>
+          <li>Every part is a plain <code>&lt;div&gt;</code>, so nothing marks the menu, article or footer.</li>
+          <li><code>&lt;br&gt;&lt;br&gt;</code> used for spacing and a table used for the footer.</li>
+          <li>The image has no <code>alt</code> text.</li>
+          <li>Wrong nesting: <code>&lt;b&gt;&lt;i&gt;…&lt;/b&gt;&lt;/i&gt;</code>.</li>
+          <li>"Click here" tells nobody where the link goes.</li>
+        </ul>
+      </article>
+
+      <article class="specimen good" aria-labelledby="good-t">
+        <header><h3 id="good-t">Good HTML5</h3><p>semantic, clean structure</p></header>
+        <div class="pair">
+          <div><h4>code</h4><pre tabindex="0"><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+  &lt;title&gt;What is HTML? | My Notes&lt;/title&gt;
+  &lt;style&gt;
+    body { font-family: sans-serif; margin: 0; background: #f2f2f2; }
+    header, main, footer { padding: 1rem; }
+    header { background: #1b6b5a; color: #fff; }
+    header h1 { margin: 0 0 .5rem; }
+    nav ul { display: flex; gap: 1rem; list-style: none; margin: 0; padding: 0; }
+    nav a { color: #fff; }
+    figure { margin: 0; }
+    footer { text-align: center; }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;header&gt;
+    &lt;h1&gt;My Notes&lt;/h1&gt;
+    &lt;nav aria-label="Main"&gt;
+      &lt;ul&gt;
+        &lt;li&gt;&lt;a href="#"&gt;Home&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;&lt;a href="#"&gt;Notes&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;&lt;a href="#"&gt;Contact&lt;/a&gt;&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/nav&gt;
+  &lt;/header&gt;
+
+  &lt;main&gt;
+    &lt;article&gt;
+      &lt;h2&gt;What is HTML?&lt;/h2&gt;
+      &lt;p&gt;Published &lt;time datetime="2026-10-19"&gt;19 October 2026&lt;/time&gt;&lt;/p&gt;
+      &lt;p&gt;HTML is the language used to structure web pages.
+         It tells the browser what each part of a page is.&lt;/p&gt;
+      &lt;figure&gt;
+        &lt;img src="tags.svg" width="160"
+             alt="Layout diagram: header, main article, aside and footer"&gt;
+        &lt;figcaption&gt;Page structure&lt;/figcaption&gt;
+      &lt;/figure&gt;
+      &lt;p&gt;&lt;a href="#"&gt;Read more about HTML&lt;/a&gt;&lt;/p&gt;
+    &lt;/article&gt;
+
+    &lt;aside&gt;
+      &lt;h2&gt;Related&lt;/h2&gt;
+      &lt;ul&gt;&lt;li&gt;&lt;a href="#"&gt;CSS basics&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;
+    &lt;/aside&gt;
+  &lt;/main&gt;
+
+  &lt;footer&gt;
+    &lt;p&gt;&amp;copy; 2026 My Notes&lt;/p&gt;
+  &lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre></div>
+          <div><h4>rendered result</h4><iframe title="Rendered good HTML5 example" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+  &lt;title&gt;What is HTML? | My Notes&lt;/title&gt;
+  &lt;style&gt;
+    body { font-family: sans-serif; margin: 0; background: #f2f2f2; }
+    header, main, footer { padding: 1rem; }
+    header { background: #1b6b5a; color: #fff; }
+    header h1 { margin: 0 0 .5rem; }
+    nav ul { display: flex; gap: 1rem; list-style: none; margin: 0; padding: 0; }
+    nav a { color: #fff; }
+    figure { margin: 0; }
+    footer { text-align: center; }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;header&gt;
+    &lt;h1&gt;My Notes&lt;/h1&gt;
+    &lt;nav aria-label=&quot;Main&quot;&gt;
+      &lt;ul&gt;
+        &lt;li&gt;&lt;a href=&quot;#&quot;&gt;Home&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;&lt;a href=&quot;#&quot;&gt;Notes&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;&lt;a href=&quot;#&quot;&gt;Contact&lt;/a&gt;&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/nav&gt;
+  &lt;/header&gt;
+
+  &lt;main&gt;
+    &lt;article&gt;
+      &lt;h2&gt;What is HTML?&lt;/h2&gt;
+      &lt;p&gt;Published &lt;time datetime=&quot;2026-10-19&quot;&gt;19 October 2026&lt;/time&gt;&lt;/p&gt;
+      &lt;p&gt;HTML is the language used to structure web pages.
+         It tells the browser what each part of a page is.&lt;/p&gt;
+      &lt;figure&gt;
+        &lt;img src=&quot;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMzIwIDE4MCI+PHJlY3Qgd2lkdGg9IjMyMCIgaGVpZ2h0PSIxODAiIGZpbGw9IiNlYWYzZWUiLz48cmVjdCB4PSIyMCIgeT0iMTQiIHdpZHRoPSIyODAiIGhlaWdodD0iMzAiIGZpbGw9IiMxYjZiNWEiLz48dGV4dCB4PSIxNjAiIHk9IjM1IiBmb250LXNpemU9IjE0IiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+aGVhZGVyICsgbmF2PC90ZXh0PjxyZWN0IHg9IjIwIiB5PSI1MiIgd2lkdGg9IjE5MCIgaGVpZ2h0PSI4MCIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMWI2YjVhIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSIxMTUiIHk9Ijk3IiBmb250LXNpemU9IjE0IiBmaWxsPSIjMWI2YjVhIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+bWFpbiAvIGFydGljbGU8L3RleHQ+PHJlY3QgeD0iMjE4IiB5PSI1MiIgd2lkdGg9IjgyIiBoZWlnaHQ9IjgwIiBmaWxsPSIjZTZiNjU1IiBzdHJva2U9IiMxYjZiNWEiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjI1OSIgeT0iOTciIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiMxYjZiNWEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5hc2lkZTwvdGV4dD48cmVjdCB4PSIyMCIgeT0iMTQwIiB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI2IiBmaWxsPSIjMWI2YjVhIi8+PHRleHQgeD0iMTYwIiB5PSIxNTgiIGZvbnQtc2l6ZT0iMTMiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5mb290ZXI8L3RleHQ+PC9zdmc+&quot; width=&quot;160&quot;
+             alt=&quot;Layout diagram: header, main article, aside and footer&quot;&gt;
+        &lt;figcaption&gt;Page structure&lt;/figcaption&gt;
+      &lt;/figure&gt;
+      &lt;p&gt;&lt;a href=&quot;#&quot;&gt;Read more about HTML&lt;/a&gt;&lt;/p&gt;
+    &lt;/article&gt;
+
+    &lt;aside&gt;
+      &lt;h2&gt;Related&lt;/h2&gt;
+      &lt;ul&gt;&lt;li&gt;&lt;a href=&quot;#&quot;&gt;CSS basics&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;
+    &lt;/aside&gt;
+  &lt;/main&gt;
+
+  &lt;footer&gt;
+    &lt;p&gt;&amp;copy; 2026 My Notes&lt;/p&gt;
+  &lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;"></iframe></div>
+        </div>
+        <ul class="notes">
+          <li>Doctype, <code>lang</code>, charset and viewport are all present.</li>
+          <li>Landmarks: <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;article&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;footer&gt;</code>.</li>
+          <li>One <code>&lt;h1&gt;</code>, then <code>&lt;h2&gt;</code> for sections.</li>
+          <li>The menu is a list of links inside <code>&lt;nav&gt;</code>.</li>
+          <li><code>&lt;time datetime&gt;</code> gives a machine-readable date.</li>
+          <li><code>&lt;figure&gt;</code>, <code>&lt;figcaption&gt;</code> and <code>alt</code> describe the image.</li>
+          <li>Descriptive link text and correctly nested tags.</li>
+          <li>All styling lives in CSS.</li>
+        </ul>
+      </article>
+
+      <h3 style="margin-top:2.5rem">What a screen reader or search engine understands</h3>
+      <p class="intro" style="font-size:1rem">Both pages could be styled to look alike. What differs is the meaning each carries.</p>
+      <div class="maps">
+        <div class="map bad">
+          <h4>Bad HTML</h4>
+          <ul>
+            <li>div #menu</li>
+            <li>div .main
+              <ul><li>div .title (only bold text)</li><li>div .date (only text)</li><li>div (paragraph split by br)</li><li>img (no description)</li><li>div .caption</li></ul>
+            </li>
+            <li>div .side</li>
+            <li>table (used as a footer)</li>
+          </ul>
+        </div>
+        <div class="map good">
+          <h4>Good HTML5</h4>
+          <ul>
+            <li>banner (header)
+              <ul><li>heading 1: My Notes</li><li>navigation: Home, Notes, Contact</li></ul>
+            </li>
+            <li>main
+              <ul>
+                <li>article
+                  <ul><li>heading 2: What is HTML?</li><li>time: 19 October 2026</li><li>paragraph</li><li>figure with caption</li></ul>
+                </li>
+                <li>complementary (aside)</li>
+              </ul>
+            </li>
+            <li>contentinfo (footer)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="why">
+        <div><b>Accessibility</b>Screen reader users can jump to the nav, main content or footer.</div>
+        <div><b>SEO</b>Search engines know the heading, article and date.</div>
+        <div><b>Maintenance</b>Clear structure that other developers can read quickly.</div>
+        <div><b>Consistency</b>A doctype and correct nesting make browsers agree.</div>
+      </div>
+    </section>
+
+    <section id="live" aria-labelledby="live-t">
+      <p class="kicker">05 / in action</p>
+      <h2 id="live-t">HTML5 in action</h2>
+      <p class="intro">Try these working HTML5 elements yourself.</p>
+      <div class="tiles">
+        <article class="tile wide">
+          <h3>Forms that validate themselves</h3>
+          <form action="#" method="get">
+            <div class="form-cols">
+              <label>Full name <input type="text" name="name" required placeholder="Your name"></label>
+              <label>Email <input type="email" name="email" required placeholder="you@example.com"></label>
+              <label>Date of birth <input type="date" name="dob"></label>
+              <label>Age (16 to 60) <input type="number" name="age" min="16" max="60" value="20"></label>
+              <label>Favourite colour <input type="color" name="colour" value="#1b6b5a"></label>
+              <label>Course <input list="courses" name="course" placeholder="Start typing">
+                <datalist id="courses"><option value="Electronics"><option value="Computer Science"><option value="Mechanical"></datalist>
+              </label>
+            </div>
+            <button type="submit">Submit</button>
+          </form>
+          <p class="small" style="margin:.7rem 0 0">Submit with the name or email empty and the browser stops you.</p>
+        </article>
+
+        <article class="tile">
+          <h3>Show and hide</h3>
+          <details open><summary>What is &lt;details&gt;?</summary><p class="small" style="margin:.5rem 0 0">A show/hide block built into HTML.</p></details>
+          <details><summary>What is &lt;mark&gt;?</summary><p class="small" style="margin:.5rem 0 0">It <mark>highlights</mark> relevant text.</p></details>
+        </article>
+
+        <article class="tile">
+          <h3>Progress and meter</h3>
+          <label><span>Course completed</span><progress value="70" max="100">70%</progress></label>
+          <label style="margin-top:.8rem"><span>Battery level</span><meter min="0" max="100" low="25" high="75" optimum="90" value="60">60%</meter></label>
+        </article>
+
+        <article class="tile">
+          <h3>Inline SVG</h3>
+          <svg viewBox="0 0 240 90" role="img" aria-label="A green circle, a gold rounded square and a dark triangle drawn with SVG">
+            <circle cx="40" cy="45" r="30" fill="#1b6b5a"/>
+            <rect x="85" y="15" width="70" height="60" rx="12" fill="#e6b655"/>
+            <polygon points="200,12 232,78 168,78" fill="#1c2620"/>
+          </svg>
+        </article>
+
+        <article class="tile wide">
+          <h3>Native audio and video (code)</h3>
+          <pre tabindex="0"><code>&lt;video controls width="480" poster="cover.jpg"&gt;
+  &lt;source src="lecture.mp4" type="video/mp4"&gt;
+  &lt;track src="subtitles.vtt" kind="subtitles" srclang="en" label="English"&gt;
+&lt;/video&gt;
+
+&lt;audio controls&gt;
+  &lt;source src="podcast.mp3" type="audio/mpeg"&gt;
+&lt;/audio&gt;</code></pre>
+          <p class="small" style="margin:.7rem 0 0">In HTML 4 this needed a Flash or QuickTime plugin through <code>&lt;object&gt;</code> and <code>&lt;embed&gt;</code>.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="cheat" aria-labelledby="cheat-t">
+      <p class="kicker">06 / cheat sheet</p>
+      <h2 id="cheat-t">Good HTML at a glance</h2>
+      <div class="sheet">
+        <div class="do">
+          <h3>Do</h3>
+          <ul>
+            <li>Start with <code>&lt;!DOCTYPE html&gt;</code>, <code>lang</code> and charset</li>
+            <li>Use landmark tags for the page structure</li>
+            <li>Keep heading levels in order</li>
+            <li>Give every image meaningful <code>alt</code> text</li>
+            <li>Close and nest tags correctly</li>
+            <li>Keep styling in CSS</li>
+          </ul>
+        </div>
+        <div class="dont">
+          <h3>Don't</h3>
+          <ul>
+            <li>Build everything out of <code>&lt;div&gt;</code>s</li>
+            <li>Use <code>&lt;font&gt;</code>, <code>&lt;center&gt;</code> or <code>bgcolor</code></li>
+            <li>Fake headings with bold text</li>
+            <li>Use <code>&lt;br&gt;</code> for spacing or tables for layout</li>
+            <li>Write links that say "click here"</li>
+            <li>Leave out the viewport meta tag</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
